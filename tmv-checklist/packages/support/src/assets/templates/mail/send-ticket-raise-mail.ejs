@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p {
+            color: #555;
+        }
+
+        .email-info {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .email-info p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Hello,</h2>
+        <h3>Ticket Raised By <%= firstName %> <%= lastName %></h3>
+        <p><%= message %></p>
+
+        <div class="email-info">
+            <p><strong>User Details:</strong></p>
+            <p><strong>Name:</strong> <%= firstName %> <%= lastName %></p>
+            <p><strong>Email:</strong> <%= userEmail %></p>
+        </div>
+    </div>
+</body>
+
+</html>

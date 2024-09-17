@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: postgres
+          image: postgres
+          resources:
+            limits:
+              memory: '1Gi'
+              cpu: 250m
+              ephemeral-storage: '5Gi'
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-srv
+spec:
+  selector:
+    app: postgres
+  ports:
+    - name: db
+      protocol: TCP
+      port: 5432
+      targetPort: 5432

@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: template-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: template
+  template:
+    metadata:
+      labels:
+        app: template
+    spec:
+      automountServiceAccountToken: false
+      initContainers:
+        - name: sleep-2min-container
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'sleep 30']
+      containers:
+        - name: template
+          image: us-central1-docker.pkg.dev/tmv-checklist-dev/docker-image-registry/checklist-template:TAG
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: '256Mi'
+              cpu: '100m'
+              ephemeral-storage: '2Gi'
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: port
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: password
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: db
+            - name: AUTH_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: auth-keys
+                  key: auth-public-key.pem
+            - name: AUTH_ACCESS_TOKEN_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: jwt-configmap
+                  key: jwt.issuer
+            - name: NATS_CLUSTER_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: nats-configmap
+                  key: nats-cluster-id
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NATS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: nats-configmap
+                  key: nats-url
+            - name: AUTHORIZATION_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-configmap
+                  key: authorization-endpoint
+---
+# template-srv.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: template-srv
+spec:
+  selector:
+    app: template
+  ports:
+    - name: template
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

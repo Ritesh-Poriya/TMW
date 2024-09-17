@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: company-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: company-service
+  template:
+    metadata:
+      labels:
+        app: company-service
+    spec:
+      automountServiceAccountToken: false
+      initContainers:
+        - name: sleep-2min-container
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'sleep 30']
+      containers:
+        - name: company-service
+          image: us-central1-docker.pkg.dev/tmv-checklist-dev/docker-image-registry/checklist-company:TAG
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+              ephemeral-storage: '2Gi'
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: port
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: password
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: db
+            - name: AUTHORIZATION_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-configmap
+                  key: authorization-endpoint
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-configmap
+                  key: redis-host
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-configmap
+                  key: redis-port
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: redis-password
+            - name: REDIS_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-configmap
+                  key: redis-default-db
+            - name: NATS_CLUSTER_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: nats-configmap
+                  key: nats-cluster-id
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NATS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: nats-configmap
+                  key: nats-url
+            - name: USERS_SERVICE_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: company-configmap
+                  key: users-service-base-url
+---
+# company-svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: company-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: company-service
+  ports:
+    - name: company
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

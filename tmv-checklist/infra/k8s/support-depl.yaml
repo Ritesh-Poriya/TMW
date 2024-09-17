@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: support-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: support-service
+  template:
+    metadata:
+      labels:
+        app: support-service
+    spec:
+      automountServiceAccountToken: false
+      initContainers:
+        - name: sleep-2min-container
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'sleep 30']
+      containers:
+        - name: support-service
+          image: us-central1-docker.pkg.dev/tmv-checklist-dev/docker-image-registry/checklist-support:TAG
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+              ephemeral-storage: '2Gi'
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: port
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: password
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: db
+            - name: AUTHORIZATION_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-configmap
+                  key: authorization-endpoint
+            - name: TRANSPORT_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: transport-type
+            - name: FROM_MAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: from-mail
+            - name: SMTP_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: smtp-host
+            - name: SMTP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: smtp-port
+            - name: SMTP_SECURE
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: smtp-secure
+            - name: SMTP_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: smtp-user
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-password
+                  key: smtp-password
+            - name: SMTP_FROM
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: from-mail
+            - name: COMPANY_SERVICE_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: company-base-url
+                  name: auth-configmap
+---
+# support-svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: support-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: support-service
+  ports:
+    - name: support
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

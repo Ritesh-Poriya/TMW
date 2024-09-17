@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: redis
+          image: redis
+          ports:
+            - containerPort: 6379
+          command:
+            - redis-server
+          args:
+            - --requirepass $(REDIS_PASSWORD)
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: redis-password
+          resources:
+            limits:
+              memory: '128Mi'
+              cpu: '50m'
+              ephemeral-storage: '2Gi'
+---
+# redis-cluster-ip-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    app: redis
+  ports:
+    - name: redis
+      protocol: TCP
+      port: 6379
+      targetPort: 6379

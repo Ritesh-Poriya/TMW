@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      automountServiceAccountToken: false
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: minio-pv-claim
+      containers:
+        - name: minio
+          image: minio/minio:latest
+          resources:
+            limits:
+              memory: '512Mi'
+              cpu: '200m'
+              ephemeral-storage: '5Gi'
+          args:
+            - server
+            - /storage
+          env:
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secrets
+                  key: access-key
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secrets
+                  key: access-key-secret
+          ports:
+            - containerPort: 9000
+              hostPort: 9000
+          volumeMounts:
+            - name: storage
+              mountPath: '/storage'
+---
+# minio-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+  selector:
+    app: minio
+---
+# minio-pv-claim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-pv-claim
+  labels:
+    app: minio-storage-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 20Gi

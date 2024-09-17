@@ -1,0 +1,51 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sql-db-migration
+spec:
+  ttlSecondsAfterFinished: 100
+  backoffLimit: 4
+  template:
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: OnFailure
+      containers:
+        - name: sql-db-migration
+          image: us-central1-docker.pkg.dev/tmv-checklist-dev/docker-image-registry/checklist-sql-db-migration:TAG
+          resources:
+            limits:
+              memory: '256Mi'
+              cpu: '100m'
+              ephemeral-storage: '2Gi'
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: port
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: password
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: db
+            - name: DB_MIGRATION_TABLE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: migration-table-name
+          args: ['npm', 'run', 'migration:run']

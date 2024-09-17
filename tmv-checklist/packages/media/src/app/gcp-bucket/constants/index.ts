@@ -1,0 +1,2 @@
+export const GCP_BUCKET_OPTIONS = Symbol('GCP_BUCKET_OPTIONS');
+export const GCP_STORAGE_CLIENT = Symbol('GCP_STORAGE_CLIENT');

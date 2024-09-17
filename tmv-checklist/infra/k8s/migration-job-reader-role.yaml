@@ -1,0 +1,34 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: migration-job-reader
+rules:
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    resourceNames:
+      - auth-db-migration-job
+      - template-db-migration-job
+    verbs:
+      - get
+      - list
+---
+# migration-role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: migration-job-reader-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: migration-job-reader
+subjects:
+  - kind: ServiceAccount
+    name: migration-job-reader-sa
+---
+# migration-service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: migration-job-reader-sa

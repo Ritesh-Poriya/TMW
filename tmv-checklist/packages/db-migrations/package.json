@@ -1,0 +1,30 @@
+{
+  "name": "db-migrations",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d ./typeorm.config.ts",
+    "migration:run:local": "NODE_ENV=local typeorm-ts-node-commonjs migration:run -d ./typeorm.config.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d ./typeorm.config.ts",
+    "migration:revert:local": "NODE_ENV=local typeorm-ts-node-commonjs migration:revert -d ./typeorm.config.ts",
+    "migration:create": "typeorm-ts-node-commonjs migration:create",
+    "migration:create:local": "NODE_ENV=local typeorm-ts-node-commonjs migration:create",
+    "migration:show": "typeorm-ts-node-commonjs migration:show -d ./typeorm.config.ts",
+    "migration:show:local": "NODE_ENV=local typeorm-ts-node-commonjs migration:show -d ./typeorm.config.ts",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d ./typeorm.config.ts",
+    "migration:generate:local": "NODE_ENV=local typeorm-ts-node-commonjs migration:generate -d ./typeorm.config.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "pg": "^8.11.3",
+    "ts-node": "^10.9.2",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

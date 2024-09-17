@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: host-configmap
+data:
+  superadmin-host: checklist.weetechsolution.com
+  superadmin-verify-email-success-redirect-url: http://checklist.weetechsolution.com
+  superadmin-verify-email-failed-redirect-url: http://checklist.weetechsolution.com/login
+  superadmin-password-reset-url: http://checklist.weetechsolution.com/reset-password
+  technician-host: checklist-technician.weetechsolution.com
+  technician-verify-email-success-redirect-url: http://checklist-technician.weetechsolution.com
+  technician-verify-email-failed-redirect-url: http://checklist-technician.weetechsolution.com/login
+  technician-password-reset-url: http://checklist-technician.weetechsolution.com/reset-password

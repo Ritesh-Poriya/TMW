@@ -1,0 +1,110 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: checklist-ingress
+spec:
+  rules:
+    - host: checklist.weetechsolution.com
+      http:
+        paths:
+          - path: /api/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-srv
+                port:
+                  number: 3000
+          - path: /api/template
+            pathType: Prefix
+            backend:
+              service:
+                name: template-srv
+                port:
+                  number: 3000
+          - path: /api/company
+            pathType: Prefix
+            backend:
+              service:
+                name: company-srv
+                port:
+                  number: 3000
+          - path: /api/jobs
+            pathType: Prefix
+            backend:
+              service:
+                name: job-srv
+                port:
+                  number: 3000
+          - path: /api/support
+            pathType: Prefix
+            backend:
+              service:
+                name: support-srv
+                port:
+                  number: 3000
+          - path: /media
+            pathType: Prefix
+            backend:
+              service:
+                name: media-clusterip-srv
+                port:
+                  number: 3000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: superadmin-panel-clusterip-srv
+                port:
+                  number: 80
+    - host: checklist-technician.weetechsolution.com
+      http:
+        paths:
+          - path: /api/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-srv
+                port:
+                  number: 3000
+          - path: /api/template
+            pathType: Prefix
+            backend:
+              service:
+                name: template-srv
+                port:
+                  number: 3000
+          - path: /api/company
+            pathType: Prefix
+            backend:
+              service:
+                name: company-srv
+                port:
+                  number: 3000
+          - path: /api/jobs
+            pathType: Prefix
+            backend:
+              service:
+                name: job-srv
+                port:
+                  number: 3000
+          - path: /api/support
+            pathType: Prefix
+            backend:
+              service:
+                name: support-srv
+                port:
+                  number: 3000
+          - path: /media
+            pathType: Prefix
+            backend:
+              service:
+                name: media-clusterip-srv
+                port:
+                  number: 3000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: technician-panel-clusterip-srv
+                port:
+                  number: 80

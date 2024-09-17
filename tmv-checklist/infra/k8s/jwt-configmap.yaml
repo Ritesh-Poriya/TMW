@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jwt-configmap
+data:
+  jwt.access.expires.in: 8h
+  jwt.refresh.expires.in: 24h
+  jwt.issuer: dev.checklist.com

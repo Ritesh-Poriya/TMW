@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nats-configmap
+data:
+  nats-cluster-id: 'checklist-dev'
+  heartbeat-interval: '5s'
+  heartbeat-timeout: '5s'
+  heartbeat-retry-count: '3'
+  nats-url: 'nats://nats-srv:4222'

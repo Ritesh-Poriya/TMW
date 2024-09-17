@@ -1,0 +1,32 @@
+{
+  "name": "checklist-backend",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint",
+    "lint:all": "eslint .",
+    "lint:all:errors": "eslint --quiet .",
+    "lint:fix": "eslint . --fix",
+    "prettier:format": "prettier --config .prettierrc --write",
+    "prettier:format-all": "prettier --config .prettierrc . --write",
+    "prepare-husky": "husky install && npx mrm@2 lint-staged"
+  },
+  "private": true,
+  "devDependencies": {
+    "@nx/js": "17.2.6",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "nx": "17.2.6",
+    "prettier": "^3.1.1"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "lint-staged": {
+    "*.js": "eslint --cache --fix",
+    "*.{js,css,md}": "prettier --write"
+  }
+}

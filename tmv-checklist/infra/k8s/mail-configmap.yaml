@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mail-configmap
+data:
+  transport-type: smtp
+  smtp-host: smtp.gmail.com
+  smtp-port: '587'
+  smtp-user: jaymin@weetechsolution.com
+  smtp-secure: 'false'
+  from-mail: 'Jaymin Patel<jaymin@weetechsolution.com>'

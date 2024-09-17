@@ -1,0 +1,4 @@
+export enum ReCaptchaActionType {
+  REGISTER_USER = 'REGISTER_USER',
+  USER_FORGOT_PASSWORD = 'USER_FORGOT_PASSWORD',
+}

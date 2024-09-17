@@ -1,0 +1,318 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      automountServiceAccountToken: false
+      initContainers:
+        - name: sleep-2min-container
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'sleep 30']
+      volumes:
+        - name: gcp-service-account
+          secret:
+            secretName: captcha-service-account-secret
+      containers:
+        - name: auth
+          image: us-central1-docker.pkg.dev/tmv-checklist-dev/docker-image-registry/checklist-auth:TAG
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: gcp-service-account
+              mountPath: /app/secrets
+              readOnly: true
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+              ephemeral-storage: '2Gi'
+          env:
+            - name: JWT_ACCESS_EXPIRES_IN
+              valueFrom:
+                configMapKeyRef:
+                  name: jwt-configmap
+                  key: jwt.access.expires.in
+            - name: JWT_REFRESH_EXPIRES_IN
+              valueFrom:
+                configMapKeyRef:
+                  name: jwt-configmap
+                  key: jwt.refresh.expires.in
+            - name: AUTH_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: auth-keys
+                  key: auth-private-key.pem
+            - name: AUTH_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: auth-keys
+                  key: auth-public-key.pem
+            - name: JWT_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: jwt-configmap
+                  key: jwt.issuer
+            - name: CRYPTO_ALGORITHM
+              valueFrom:
+                configMapKeyRef:
+                  name: crypto-configmap
+                  key: crypto.algorithm
+            - name: CRYPTO_KEYPHRASS
+              valueFrom:
+                secretKeyRef:
+                  name: crypto-secrets
+                  key: crypto-keyphrase
+            - name: CRYPTO_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: crypto-secrets
+                  key: crypto-privateKey
+            - name: CRYPTO_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: crypto-secrets
+                  key: crypto-publicKey
+            - name: HASHING_SALT
+              valueFrom:
+                configMapKeyRef:
+                  name: crypto-configmap
+                  key: crypto.hashing.salt
+            - name: GCP_PROJECT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: captcha-configmap
+                  key: gcp.project.id
+            - name: SERVICE_ACCOUNT_PATH
+              value: /app/secrets/service-account.json
+            - name: CAPTCHA_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: captcha-configmap
+                  key: captcha.key
+            - name: CAPTCHA_ACCEPTABLE_SCORE
+              valueFrom:
+                configMapKeyRef:
+                  name: captcha-configmap
+                  key: captcha.acceptable.score
+            - name: TRANSPORT_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: transport-type
+            - name: FROM_MAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: from-mail
+            - name: SMTP_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: smtp-host
+            - name: SMTP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: smtp-port
+            - name: SMTP_SECURE
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: smtp-secure
+            - name: SMTP_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: smtp-user
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-password
+                  key: smtp-password
+            - name: SMTP_FROM
+              valueFrom:
+                configMapKeyRef:
+                  name: mail-configmap
+                  key: from-mail
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-configmap
+                  key: redis-host
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-configmap
+                  key: redis-port
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: redis-password
+            - name: REDIS_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-configmap
+                  key: redis-default-db
+            - name: REDIS_BULL_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: bull-configmap
+                  key: bull-queue-redis-db
+            - name: PASSWORD_RESET_DELIMITER
+              valueFrom:
+                configMapKeyRef:
+                  name: password-reset-configmap
+                  key: delimiter
+            - name: PASSWORD_RESET_LINK_EXPIRY
+              valueFrom:
+                configMapKeyRef:
+                  name: password-reset-configmap
+                  key: link-expire-in
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: port
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sql-db-secret
+                  key: password
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-configmap
+                  key: db
+            - name: SUPER_ADMIN_HOSTNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: host-configmap
+                  key: superadmin-host
+            - name: SUPER_ADMIN_VERIFY_EMAIL_SUCCESS_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: host-configmap
+                  key: superadmin-verify-email-success-redirect-url
+            - name: SUPER_ADMIN_VERIFY_EMAIL_FAILURE_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: host-configmap
+                  key: superadmin-verify-email-failed-redirect-url
+            - name: SUPER_ADMIN_PASSWORD_RESET_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: host-configmap
+                  key: superadmin-password-reset-url
+            - name: TECHNICIAN_HOSTNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: host-configmap
+                  key: technician-host
+            - name: TECHNICIAN_VERIFY_EMAIL_SUCCESS_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: host-configmap
+                  key: technician-verify-email-success-redirect-url
+            - name: TECHNICIAN_VERIFY_EMAIL_FAILURE_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: host-configmap
+                  key: technician-verify-email-failed-redirect-url
+            - name: TECHNICIAN_PASSWORD_RESET_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: host-configmap
+                  key: technician-password-reset-url
+            - name: VERIFY_SUCCESS_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-service-configmap
+                  key: emailVerifySuccessRedirectUrl
+            - name: VERIFY_FAILURE_REDIRECT_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-service-configmap
+                  key: emailVerifyFailureRedirectUrl
+            - name: NATS_CLUSTER_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: nats-configmap
+                  key: nats-cluster-id
+            - name: NATS_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NATS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: nats-configmap
+                  key: nats-url
+            - name: ENABLE_BLOCKING
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-blocking-configmap
+                  key: enable-blocking
+            - name: WRONG_CREDENTIALS_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-blocking-configmap
+                  key: wrong-credentials-limit
+            - name: WRONG_CREDENTIALS_WINDOW_IN_MINUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-blocking-configmap
+                  key: wrong-credentials-window-duration-in-minutes
+            - name: WRONG_CREDENTIALS_BLOCK_DURATION_IN_MINUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-blocking-configmap
+                  key: wrong-credentials-block-duration-in-minutes
+            - name: MASTER_ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  key: email
+                  name: master-admin-secrets
+            - name: MASTER_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: master-admin-secrets
+            - name: COMPANY_SERVICE_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: company-base-url
+                  name: auth-configmap
+---
+# auth-srv.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-srv
+spec:
+  selector:
+    app: auth
+  ports:
+    - name: auth
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

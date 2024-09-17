@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: media
+  template:
+    metadata:
+      labels:
+        app: media
+    spec:
+      automountServiceAccountToken: false
+      volumes:
+        - name: gcp-media-service-account
+          secret:
+            secretName: gcp-storage-signed-url-secret
+      containers:
+        - name: media
+          image: us-central1-docker.pkg.dev/tmv-checklist-dev/docker-image-registry/checklist-media:TAG
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: gcp-media-service-account
+              mountPath: /app/secrets
+              readOnly: true
+          resources:
+            limits:
+              cpu: 50m
+              memory: 128Mi
+              ephemeral-storage: '2Gi'
+          env:
+            - name: GCP_SERVICE_ACCOUNT_KEY_PATH
+              value: /app/secrets/service-account.json
+            - name: GCP_BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: gcp-configmap
+                  key: bucketName
+---
+# media-svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: media-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: media
+  ports:
+    - name: media
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

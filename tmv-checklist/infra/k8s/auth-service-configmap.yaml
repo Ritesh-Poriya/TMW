@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-service-configmap
+data:
+  emailVerifySuccessRedirectUrl: http://checklist.weetechsolution.com/
+  emailVerifyFailureRedirectUrl: http://checklist.weetechsolution.com/

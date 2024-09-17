@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-configmap
+data:
+  redis-host: redis-cluster-ip-service
+  redis-port: '6379'
+  redis-default-db: '1'

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-blocking-configmap
+data:
+  enable-blocking: 'false'
+  wrong-credentials-limit: '5'
+  wrong-credentials-window-duration-in-minutes: '10'
+  wrong-credentials-block-duration-in-minutes: '5'
